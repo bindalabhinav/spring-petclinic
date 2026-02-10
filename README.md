@@ -1,174 +1,176 @@
-# Spring PetClinic Sample Application [![Build Status](https://github.com/spring-projects/spring-petclinic/actions/workflows/maven-build.yml/badge.svg)](https://github.com/spring-projects/spring-petclinic/actions/workflows/maven-build.yml)[![Build Status](https://github.com/spring-projects/spring-petclinic/actions/workflows/gradle-build.yml/badge.svg)](https://github.com/spring-projects/spring-petclinic/actions/workflows/gradle-build.yml)
+# 🧩 Feature Flag System – Spring PetClinic
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/spring-projects/spring-petclinic) [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=7517918)
+## 📌 Overview
 
-## Understanding the Spring Petclinic application with a few diagrams
+This project extends the **Spring PetClinic** application by implementing a **custom Feature Flag system** and integrating it into real application features.
 
-See the presentation here:  
-[Spring Petclinic Sample Application (legacy slides)](https://speakerdeck.com/michaelisvy/spring-petclinic-sample-application?slide=20)
+The feature flag system allows application features to be **enabled or disabled dynamically at runtime**, without code changes or redeployment.  
+No external feature flag libraries (such as FF4J or Togglz) are used.
 
-> **Note:** These slides refer to a legacy, pre–Spring Boot version of Petclinic and may not reflect the current Spring Boot–based implementation.  
-> For up-to-date information, please refer to this repository and its documentation.
+---
 
+## 🎯 Objectives
 
-## Run Petclinic locally
+- Build a backend-driven feature flag service from scratch  
+- Persist feature flags in a database  
+- Expose CRUD APIs for flag management  
+- Support advanced feature flag use cases  
+- Integrate flags into existing PetClinic features  
+- Keep business logic clean using a custom annotation and Spring AOP  
 
-Spring Petclinic is a [Spring Boot](https://spring.io/guides/gs/spring-boot) application built using [Maven](https://spring.io/guides/gs/maven/) or [Gradle](https://spring.io/guides/gs/gradle/).
-Java 17 or later is required for the build, and the application can run with Java 17 or newer.
+---
 
-You first need to clone the project locally:
+## 🚀 How to Run the Application
 
-```bash
-git clone https://github.com/spring-projects/spring-petclinic.git
-cd spring-petclinic
-```
-If you are using Maven, you can start the application on the command-line as follows:
+### Prerequisites
+- Java 17
+- Maven or Maven Wrapper
 
+### Run locally
 ```bash
 ./mvnw spring-boot:run
 ```
-With Gradle, the command is as follows:
 
+For Windows:
 ```bash
-./gradlew bootRun
+mvnw.cmd spring-boot:run
 ```
 
-You can then access the Petclinic at <http://localhost:8080/>.
-
-<img width="1042" alt="petclinic-screenshot" src="https://cloud.githubusercontent.com/assets/838318/19727082/2aee6d6c-9b8e-11e6-81fe-e889a5ddfded.png">
-
-You can, of course, run Petclinic in your favorite IDE.
-See below for more details.
-
-## Building a Container
-
-There is no `Dockerfile` in this project. You can build a container image (if you have a docker daemon) using the Spring Boot build plugin:
-
-```bash
-./mvnw spring-boot:build-image
+### Access the application
+```
+http://localhost:8080
 ```
 
-## In case you find a bug/suggested improvement for Spring Petclinic
+---
 
-Our issue tracker is available [here](https://github.com/spring-projects/spring-petclinic/issues).
+## 🏗️ Design Decisions & Assumptions
 
-## Database configuration
+- Feature flags are stored in a relational database (H2 by default)
+- Flags persist across application restarts
+- Feature flag management APIs are **not authenticated**, as per requirements
+- User identity is simulated using a deterministic value (`anonymous-user`)
+- Feature evaluation logic is centralized for reuse
+- Annotation-based enforcement is used to avoid polluting controller logic
 
-In its default configuration, Petclinic uses an in-memory database (H2) which
-gets populated at startup with data. The h2 console is exposed at `http://localhost:8080/h2-console`,
-and it is possible to inspect the content of the database using the `jdbc:h2:mem:<uuid>` URL. The UUID is printed at startup to the console.
+---
 
-A similar setup is provided for MySQL and PostgreSQL if a persistent database configuration is needed. Note that whenever the database type changes, the app needs to run with a different profile: `spring.profiles.active=mysql` for MySQL or `spring.profiles.active=postgres` for PostgreSQL. See the [Spring Boot documentation](https://docs.spring.io/spring-boot/how-to/properties-and-configuration.html#howto.properties-and-configuration.set-active-spring-profiles) for more detail on how to set the active profile.
+## 🎛️ Feature Flag Capabilities
 
-You can start MySQL or PostgreSQL locally with whatever installer works for your OS or use docker:
+Each feature flag supports the following behaviors:
 
-```bash
-docker run -e MYSQL_USER=petclinic -e MYSQL_PASSWORD=petclinic -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=petclinic -p 3306:3306 mysql:9.5
+| Capability | Description |
+|---------|------------|
+| Global Enable / Disable | Turn feature on or off |
+| Whitelist Users | Always allow specific users |
+| Blacklist Users | Always block specific users |
+| Percentage Rollout | Gradual rollout to a subset of users |
+
+---
+
+## 🧪 Edge Case Handling
+
+| Scenario | Behavior |
+|------|--------|
+| Feature flag not found | Feature disabled (fail-safe) |
+| Enabled = false | Feature blocked |
+| User in blacklist | Feature blocked |
+| User in whitelist | Feature allowed |
+| Rollout percentage = 0 | Feature blocked |
+| Rollout percentage = 100 | Feature allowed |
+| Application restart | Flags persist |
+
+---
+
+## 🔗 Feature Flagged Application Features
+
+| Application Feature | Flag Name | Description | Code Location |
+|-------------------|----------|------------|--------------|
+| Add New Pet | ADD_PET | Controls pet creation | PetController |
+| Add Visit | ADD_VISIT | Controls visit creation | VisitController |
+| Owner Search | OWNER_SEARCH | Controls owner search | OwnerController |
+
+---
+
+## 🔌 Feature Flag Management APIs
+
+### Base Path
+```
+/api/flags
 ```
 
-or
-
-```bash
-docker run -e POSTGRES_USER=petclinic -e POSTGRES_PASSWORD=petclinic -e POSTGRES_DB=petclinic -p 5432:5432 postgres:18.1
+### Create / Update a Flag
+```http
+POST /api/flags
 ```
 
-Further documentation is provided for [MySQL](https://github.com/spring-projects/spring-petclinic/blob/main/src/main/resources/db/mysql/petclinic_db_setup_mysql.txt)
-and [PostgreSQL](https://github.com/spring-projects/spring-petclinic/blob/main/src/main/resources/db/postgres/petclinic_db_setup_postgres.txt).
-
-Instead of vanilla `docker` you can also use the provided `docker-compose.yml` file to start the database containers. Each one has a service named after the Spring profile:
-
-```bash
-docker compose up mysql
+```json
+{
+  "name": "ADD_PET",
+  "enabled": true,
+  "rolloutPercentage": 100
+}
 ```
 
-or
-
-```bash
-docker compose up postgres
+### Get All Flags
+```http
+GET /api/flags
 ```
 
-## Test Applications
+### Get Flag by Name
+```http
+GET /api/flags/{name}
+```
 
-At development time we recommend you use the test applications set up as `main()` methods in `PetClinicIntegrationTests` (using the default H2 database and also adding Spring Boot Devtools), `MySqlTestApplication` and `PostgresIntegrationTests`. These are set up so that you can run the apps in your IDE to get fast feedback and also run the same classes as integration tests against the respective database. The MySql integration tests use Testcontainers to start the database in a Docker container, and the Postgres tests use Docker Compose to do the same thing.
+### Delete a Flag
+```http
+DELETE /api/flags/{name}
+```
 
-## Compiling the CSS
+---
 
-There is a `petclinic.css` in `src/main/resources/static/resources/css`. It was generated from the `petclinic.scss` source, combined with the [Bootstrap](https://getbootstrap.com/) library. If you make changes to the `scss`, or upgrade Bootstrap, you will need to re-compile the CSS resources using the Maven profile "css", i.e. `./mvnw package -P css`. There is no build profile for Gradle to compile the CSS.
+## 🧠 Feature Flag Enforcement
 
-## Working with Petclinic in your IDE
+Feature flags are enforced using a **custom annotation**:
 
-### Prerequisites
+```java
+@FeatureToggle("ADD_PET")
+```
 
-The following items should be installed in your system:
+This annotation is processed using **Spring AOP**.  
+Before the annotated method executes, the feature flag is evaluated, and execution is either allowed or blocked.
 
-- Java 17 or newer (full JDK, not a JRE)
-- [Git command line tool](https://help.github.com/articles/set-up-git)
-- Your preferred IDE
-  - Eclipse with the m2e plugin. Note: when m2e is available, there is a m2 icon in `Help -> About` dialog. If m2e is
-  not there, follow the installation process [here](https://www.eclipse.org/m2e/)
-  - [Spring Tools Suite](https://spring.io/tools) (STS)
-  - [IntelliJ IDEA](https://www.jetbrains.com/idea/)
-  - [VS Code](https://code.visualstudio.com)
+This approach:
+- Keeps controller code clean
+- Centralizes feature flag logic
+- Makes feature control declarative and easy to audit
 
-### Steps
+---
 
-1. On the command line run:
+## 🗃️ Database Configuration
 
-    ```bash
-    git clone https://github.com/spring-projects/spring-petclinic.git
-    ```
+- H2 in-memory database is used by default
+- Hibernate auto DDL is enabled for schema creation
 
-1. Inside Eclipse or STS:
+```properties
+spring.jpa.hibernate.ddl-auto=update
+```
 
-    Open the project via `File -> Import -> Maven -> Existing Maven project`, then select the root directory of the cloned repo.
+---
 
-    Then either build on the command line `./mvnw generate-resources` or use the Eclipse launcher (right-click on project and `Run As -> Maven install`) to generate the CSS. Run the application's main method by right-clicking on it and choosing `Run As -> Java Application`.
 
-1. Inside IntelliJ IDEA:
+## ✅ Summary
 
-    In the main menu, choose `File -> Open` and select the Petclinic [pom.xml](pom.xml). Click on the `Open` button.
+This implementation demonstrates:
+- A production-style feature flag system
+- Clean Spring Boot integration
+- Advanced rollout strategies
+- Safe defaults and edge-case handling
+- Annotation-based enforcement using AOP
 
-    - CSS files are generated from the Maven build. You can build them on the command line `./mvnw generate-resources` or right-click on the `spring-petclinic` project then `Maven -> Generates sources and Update Folders`.
+The solution focuses on **clarity, correctness, and real-world applicability**.
 
-    - A run configuration named `PetClinicApplication` should have been created for you if you're using a recent Ultimate version. Otherwise, run the application by right-clicking on the `PetClinicApplication` main class and choosing `Run 'PetClinicApplication'`.
+---
 
-1. Navigate to the Petclinic
+## 🙌 Author
 
-    Visit [http://localhost:8080](http://localhost:8080) in your browser.
-
-## Looking for something in particular?
-
-|Spring Boot Configuration | Class or Java property files  |
-|--------------------------|---|
-|The Main Class | [PetClinicApplication](https://github.com/spring-projects/spring-petclinic/blob/main/src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java) |
-|Properties Files | [application.properties](https://github.com/spring-projects/spring-petclinic/blob/main/src/main/resources) |
-|Caching | [CacheConfiguration](https://github.com/spring-projects/spring-petclinic/blob/main/src/main/java/org/springframework/samples/petclinic/system/CacheConfiguration.java) |
-
-## Interesting Spring Petclinic branches and forks
-
-The Spring Petclinic "main" branch in the [spring-projects](https://github.com/spring-projects/spring-petclinic)
-GitHub org is the "canonical" implementation based on Spring Boot and Thymeleaf. There are
-[quite a few forks](https://spring-petclinic.github.io/docs/forks.html) in the GitHub org
-[spring-petclinic](https://github.com/spring-petclinic). If you are interested in using a different technology stack to implement the Pet Clinic, please join the community there.
-
-## Interaction with other open-source projects
-
-One of the best parts about working on the Spring Petclinic application is that we have the opportunity to work in direct contact with many Open Source projects. We found bugs/suggested improvements on various topics such as Spring, Spring Data, Bean Validation and even Eclipse! In many cases, they've been fixed/implemented in just a few days.
-Here is a list of them:
-
-| Name | Issue |
-|------|-------|
-| Spring JDBC: simplify usage of NamedParameterJdbcTemplate | [SPR-10256](https://github.com/spring-projects/spring-framework/issues/14889) and [SPR-10257](https://github.com/spring-projects/spring-framework/issues/14890) |
-| Bean Validation / Hibernate Validator: simplify Maven dependencies and backward compatibility |[HV-790](https://hibernate.atlassian.net/browse/HV-790) and [HV-792](https://hibernate.atlassian.net/browse/HV-792) |
-| Spring Data: provide more flexibility when working with JPQL queries | [DATAJPA-292](https://github.com/spring-projects/spring-data-jpa/issues/704) |
-
-## Contributing
-
-The [issue tracker](https://github.com/spring-projects/spring-petclinic/issues) is the preferred channel for bug reports, feature requests and submitting pull requests.
-
-For pull requests, editor preferences are available in the [editor config](.editorconfig) for easy use in common text editors. Read more and download plugins at <https://editorconfig.org>. All commits must include a __Signed-off-by__ trailer at the end of each commit message to indicate that the contributor agrees to the Developer Certificate of Origin.
-For additional details, please refer to the blog post [Hello DCO, Goodbye CLA: Simplifying Contributions to Spring](https://spring.io/blog/2025/01/06/hello-dco-goodbye-cla-simplifying-contributions-to-spring).
-
-## License
-
-The Spring PetClinic sample application is released under version 2.0 of the [Apache License](https://www.apache.org/licenses/LICENSE-2.0).
+**Abhinav Bindal**
