@@ -18,8 +18,7 @@ public class FeatureFlagService {
 	}
 
 	public FeatureFlag getByName(String name) {
-		return repository.findByName(name)
-			.orElseThrow(() -> new RuntimeException("Feature flag not found: " + name));
+		return repository.findByName(name).orElseThrow(() -> new RuntimeException("Feature flag not found: " + name));
 	}
 
 	public List<FeatureFlag> getAll() {
@@ -30,4 +29,5 @@ public class FeatureFlagService {
 		FeatureFlag flag = getByName(name);
 		repository.delete(flag);
 	}
+
 }

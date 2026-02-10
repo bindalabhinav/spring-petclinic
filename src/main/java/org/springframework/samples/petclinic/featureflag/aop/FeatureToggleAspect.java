@@ -23,16 +23,12 @@ public class FeatureToggleAspect {
 
 		String flagName = featureToggle.value();
 
-
 		String userId = resolveUser();
 
 		boolean enabled = evaluator.isEnabled(flagName, userId);
 
 		if (!enabled) {
-			throw new ResponseStatusException(
-				HttpStatus.FORBIDDEN,
-				"Feature '" + flagName + "' is disabled"
-			);
+			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Feature '" + flagName + "' is disabled");
 		}
 	}
 
@@ -40,4 +36,5 @@ public class FeatureToggleAspect {
 
 		return "anonymous-user";
 	}
+
 }

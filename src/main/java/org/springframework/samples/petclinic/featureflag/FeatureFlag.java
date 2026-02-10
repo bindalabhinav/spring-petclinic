@@ -25,6 +25,7 @@ public class FeatureFlag {
 	private Integer rolloutPercentage;
 
 	private LocalDateTime createdAt;
+
 	private LocalDateTime updatedAt;
 
 	@PrePersist
@@ -103,4 +104,5 @@ public class FeatureFlag {
 	}
 
 	// Getters & setters
+
 }

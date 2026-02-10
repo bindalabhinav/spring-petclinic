@@ -7,5 +7,7 @@ import java.util.Optional;
 
 @Repository
 public interface FeatureFlagRepository extends JpaRepository<FeatureFlag, Long> {
+
 	Optional<FeatureFlag> findByName(String name);
+
 }

@@ -30,8 +30,7 @@ public class FeatureFlagController {
 	}
 
 	@PutMapping("/{name}")
-	public FeatureFlag update(@PathVariable String name,
-							  @RequestBody FeatureFlag flag) {
+	public FeatureFlag update(@PathVariable String name, @RequestBody FeatureFlag flag) {
 		flag.setName(name);
 		return service.createOrUpdate(flag);
 	}
@@ -40,4 +39,5 @@ public class FeatureFlagController {
 	public void delete(@PathVariable String name) {
 		service.delete(name);
 	}
+
 }

@@ -17,9 +17,7 @@ public class FeatureFlagEvaluator {
 	}
 
 	public boolean isEnabled(String flagName, String userId) {
-		return repository.findByName(flagName)
-			.map(flag -> evaluate(flag, userId))
-			.orElse(false);
+		return repository.findByName(flagName).map(flag -> evaluate(flag, userId)).orElse(false);
 	}
 
 	private boolean evaluate(FeatureFlag flag, String userId) {
@@ -56,8 +54,7 @@ public class FeatureFlagEvaluator {
 		if (value == null || value.isBlank()) {
 			return Collections.emptySet();
 		}
-		return Arrays.stream(value.split(","))
-			.map(String::trim)
-			.collect(Collectors.toSet());
+		return Arrays.stream(value.split(",")).map(String::trim).collect(Collectors.toSet());
 	}
+
 }
